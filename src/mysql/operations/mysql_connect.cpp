@@ -56,8 +56,8 @@ void TMySQLConnectOp::RunThreadPart()
 
     if (!mysql_real_connect(mysql, host, m_pCon->m_info.user, m_pCon->m_info.pass, m_pCon->m_info.database, m_pCon->m_info.port, socket, ((1) << 17)))
     {
+        snprintf(m_szError, sizeof m_szError, "%s", mysql_error(mysql));
         mysql_close(mysql);
-        strncpy(m_szError, mysql_error(mysql), sizeof m_szError);
         return;
     }
 

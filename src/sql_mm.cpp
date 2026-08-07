@@ -25,7 +25,7 @@
 #define GAMEBIN "/csgo/bin/linuxsteamrt64/"
 #endif
 
-SH_DECL_HOOK1_void(IGameSystem, ServerGamePostSimulate, SH_NOATTRIB, 0, const EventServerGamePostSimulate_t *);
+SH_DECL_HOOK1_void(IGameSystem, OnServerGamePostSimulate, SH_NOATTRIB, 0, const EventServerGamePostSimulate_t *);
 
 SQLPlugin g_SQLPlugin;
 IServerGameDLL *server = nullptr;
@@ -84,7 +84,7 @@ bool SQLPlugin::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, boo
     g_sqlInterface = new SQLInterface();
     // clang-format off
     serverGamePostSimulateHook = SH_ADD_DVPHOOK(IGameSystem,
-        ServerGamePostSimulate, 
+        OnServerGamePostSimulate, 
         (IGameSystem *)serverModule->FindVirtualTable("CEntityDebugGameSystem"),
         SH_MEMBER(this, &SQLPlugin::Hook_ServerGamePostSimulate), 
         true);

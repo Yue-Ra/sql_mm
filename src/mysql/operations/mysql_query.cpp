@@ -21,6 +21,7 @@
 
 #include "mysql_query.h"
 #include "tier0/dbg.h"
+#include "strtools.h"
 #include "../mysql_result.h"
 
 TMySQLQueryOp::~TMySQLQueryOp()

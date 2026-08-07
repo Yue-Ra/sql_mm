@@ -60,6 +60,9 @@ for sdk_target in MMSPlugin.sdk_targets:
     binary.compiler.cxxflags += ['-fno-rtti']
 
   if binary.compiler.target.platform == 'windows':
+    binary.sources += [
+      'src/utils/plat_win.cpp'
+    ]
     binary.compiler.defines += ['WIN32_LEAN_AND_MEAN']
     binary.compiler.cxxincludes += [
       os.path.join(builder.sourcePath, 'vendor', 'mysql', 'include'),
@@ -68,10 +71,6 @@ for sdk_target in MMSPlugin.sdk_targets:
       'crypt32.lib',
       os.path.join(builder.sourcePath, 'vendor', 'mysql', 'lib', 'mysqlclient.lib'),
     ]
-
-  binary.custom = [builder.tools.Protoc(protoc = sdk_target.protoc, sources = [
-    os.path.join(sdk['path'], 'common', 'network_connection.proto'),
-  ])]
 
   nodes = builder.Add(binary)
   MMSPlugin.binaries += [nodes]

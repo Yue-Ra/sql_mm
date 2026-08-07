@@ -1,15 +1,16 @@
-/* Copyright (c) 2016, 2023, Oracle and/or its affiliates.
+/* Copyright (c) 2016, 2026, Oracle and/or its affiliates.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License, version 2.0,
    as published by the Free Software Foundation.
 
-   This program is also distributed with certain software (including
+   This program is designed to work with certain software (including
    but not limited to OpenSSL) that is licensed under separate terms,
    as designated in a particular file or component or in included license
    documentation.  The authors of MySQL hereby grant you an additional
    permission to link the program and your derivative works with the
-   separately licensed software that they have included with MySQL.
+   separately licensed software that they have either included with
+   the program or referenced in the documentation.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -35,8 +36,7 @@
   st_mysql_plugin.
 */
 
-struct st_mysql_keyring
-{
+struct st_mysql_keyring {
   int interface_version;
   /*!
     Add key to the keyring.
@@ -56,8 +56,8 @@ struct st_mysql_keyring
       @retval 0 OK
       @retval 1 ERROR
   */
-  my_bool (*mysql_key_store)(const char *key_id, const char *key_type,
-                             const char* user_id, const void *key, size_t key_len);
+  bool (*mysql_key_store)(const char *key_id, const char *key_type,
+                          const char *user_id, const void *key, size_t key_len);
   /*!
     Fetches key from the keyring.
 
@@ -77,8 +77,8 @@ struct st_mysql_keyring
       @retval 0 OK
       @retval 1 ERROR
   */
-  my_bool (*mysql_key_fetch)(const char *key_id, char **key_type,
-                             const char *user_id, void **key, size_t *key_len);
+  bool (*mysql_key_fetch)(const char *key_id, char **key_type,
+                          const char *user_id, void **key, size_t *key_len);
 
   /*!
     Removes key from the keyring.
@@ -93,7 +93,7 @@ struct st_mysql_keyring
       @retval 0 OK
       @retval 1 ERROR
   */
-  my_bool (*mysql_key_remove)(const char *key_id, const char *user_id);
+  bool (*mysql_key_remove)(const char *key_id, const char *user_id);
 
   /*!
     Generates and stores the key.
@@ -110,8 +110,8 @@ struct st_mysql_keyring
       @retval 0 OK
       @retval 1 ERROR
   */
-  my_bool (*mysql_key_generate)(const char *key_id, const char *key_type,
-                                const char *user_id, size_t key_len);
+  bool (*mysql_key_generate)(const char *key_id, const char *key_type,
+                             const char *user_id, size_t key_len);
 
   /**
     Keys_iterator object refers to an iterator which is used to iterate
@@ -156,20 +156,16 @@ struct st_mysql_keyring
 
     @param[out]  key_iterator   Iterator used to fetch individual keys
                                 from key_container.
-
-    @return VOID
   */
-  void (*mysql_key_iterator_init)(void** key_iterator);
+  void (*mysql_key_iterator_init)(void **key_iterator);
 
   /**
     Deinitialize an iterator.
 
     @param[in]   key_iterator   Iterator used to fetch individual keys
                                 from key_container.
-
-    @return VOID
   */
-  void (*mysql_key_iterator_deinit)(void* key_iterator);
+  void (*mysql_key_iterator_deinit)(void *key_iterator);
 
   /**
     Get details of key. Every call to this service will change
@@ -186,6 +182,7 @@ struct st_mysql_keyring
       @retval 0 OK
       @retval 1 ERROR
   */
-  bool (*mysql_key_iterator_get_key)(void* key_iterator, char *key_id, char *user_id);
+  bool (*mysql_key_iterator_get_key)(void *key_iterator, char *key_id,
+                                     char *user_id);
 };
 #endif

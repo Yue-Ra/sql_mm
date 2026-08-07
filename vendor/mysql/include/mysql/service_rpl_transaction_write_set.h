@@ -1,15 +1,16 @@
-/* Copyright (c) 2014, 2023, Oracle and/or its affiliates.
+/* Copyright (c) 2014, 2026, Oracle and/or its affiliates.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License, version 2.0,
    as published by the Free Software Foundation.
 
-   This program is also distributed with certain software (including
+   This program is designed to work with certain software (including
    but not limited to OpenSSL) that is licensed under separate terms,
    as designated in a particular file or component or in included license
    documentation.  The authors of MySQL hereby grant you an additional
    permission to link the program and your derivative works with the
-   separately licensed software that they have included with MySQL.
+   separately licensed software that they have either included with
+   the program or referenced in the documentation.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -48,33 +49,28 @@
 #include <stdlib.h>
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /**
   This structure is used to keep the list of the hash values of the records
   changed in the transaction.
 */
-struct st_trans_write_set
-{
-  unsigned int m_flags; // reserved
-  unsigned long write_set_size; // Size of the PKE set of the transaction.
-  unsigned long long* write_set;  // A pointer to the PKE set.
+struct Transaction_write_set {
+  unsigned int m_flags;           // reserved
+  unsigned long write_set_size;   // Size of the PKE set of the transaction.
+  unsigned long long *write_set;  // A pointer to the PKE set.
 };
-typedef struct st_trans_write_set Transaction_write_set;
 
-extern struct transaction_write_set_service_st {
-  Transaction_write_set* (*get_transaction_write_set)(unsigned long m_thread_id);
-  void (*require_full_write_set)(int requires_ws);
-  void (*set_write_set_memory_size_limit)(long long size_limit);
-  void (*update_write_set_memory_size_limit)(long long  size_limit);
+extern "C" struct transaction_write_set_service_st {
+  Transaction_write_set *(*get_transaction_write_set)(
+      unsigned long m_thread_id);
+  void (*require_full_write_set)(bool requires_ws);
+  void (*set_write_set_memory_size_limit)(uint64 size_limit);
+  void (*update_write_set_memory_size_limit)(uint64 size_limit);
 } *transaction_write_set_service;
 
 #ifdef MYSQL_DYNAMIC_PLUGIN
 
 #define get_transaction_write_set(m_thread_id) \
-  (transaction_write_set_service->get_transaction_write_set((m_thread_id)))
+  transaction_write_set_service->get_transaction_write_set(m_thread_id)
 #define require_full_write_set(requires_ws) \
   transaction_write_set_service->require_full_write_set(requires_ws)
 #define set_write_set_memory_size_limit(size_limit) \
@@ -84,18 +80,14 @@ extern struct transaction_write_set_service_st {
 
 #else
 
-Transaction_write_set* get_transaction_write_set(unsigned long m_thread_id);
+Transaction_write_set *get_transaction_write_set(unsigned long m_thread_id);
 
-void require_full_write_set(int requires_ws);
+void require_full_write_set(bool requires_ws);
 
-void set_write_set_memory_size_limit(long long size_limit);
+void set_write_set_memory_size_limit(uint64 size_limit);
 
-void update_write_set_memory_size_limit(long long size_limit);
+void update_write_set_memory_size_limit(uint64 size_limit);
 
-#endif
-
-#ifdef __cplusplus
-}
 #endif
 
 #define MYSQL_SERVICE_TRANSACTION_WRITE_SET_INCLUDED
