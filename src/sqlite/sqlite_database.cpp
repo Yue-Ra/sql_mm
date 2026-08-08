@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "sqlite_database.h"
 #include "sqlite_query.h"
 #include "sql_mm.h"

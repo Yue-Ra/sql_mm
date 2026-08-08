@@ -19,13 +19,15 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <algorithm>
+#include <cstdarg>
+
 #include "mysql_database.h"
 #include "tier0/dbg.h"
 
 #include "operations/mysql_connect.h"
 #include "operations/mysql_query.h"
 #include "operations/mysql_transact.h"
-#include <cstdarg>
 
 extern std::vector<MySQLConnection *> g_vecMysqlConnections;
 
