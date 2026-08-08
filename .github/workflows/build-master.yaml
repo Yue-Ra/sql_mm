@@ -1,0 +1,12 @@
+name: Master build
+
+# master 分支每次推送时自动构建。
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Build
+    uses: ./.github/workflows/build.yaml

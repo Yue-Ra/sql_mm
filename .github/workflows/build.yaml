@@ -1,0 +1,124 @@
+name: Build
+
+# 可复用的构建工作流，供其他工作流通过 `uses: ./.github/workflows/build.yaml` 调用。
+# 在 Linux 与 Windows 上编译 sql_mm，并将 `build/package` 打包为 artifact 上传。
+on:
+  workflow_call:
+
+jobs:
+  build-linux:
+    name: Linux (x86_64)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      # 旧版 hl2sdk-manifests 的 cs2.json 会链接 tier1 预编译库，
+      # 但新版 hl2sdk 已不再提供该库（需从源码自行构建）。
+      # 将子模块更新到远程最新可移除该依赖，与官方 SourceMod/Metamod 构建保持一致。
+      - name: Update hl2sdk-manifests submodule
+        run: git submodule update --init --remote hl2sdk-manifests
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libmysqlclient-dev libssl-dev zlib1g-dev
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install AMBuild
+        run: |
+          git clone --depth 1 https://github.com/alliedmodders/ambuild.git
+          python3 -m pip install ./ambuild
+
+      - name: Clone Metamod:Source
+        run: git clone --depth 1 https://github.com/alliedmodders/metamod-source.git
+
+      - name: Clone HL2SDK (cs2)
+        run: git clone --depth 1 --branch cs2 https://github.com/alliedmodders/hl2sdk.git
+
+      - name: Configure AMBuild
+        run: |
+          mkdir -p build
+          cd build
+          python3 ../configure.py -s cs2 --enable-optimize
+        env:
+          MMSOURCE112: ${{ github.workspace }}/metamod-source
+          HL2SDKCS2: ${{ github.workspace }}/hl2sdk
+
+      - name: Build
+        run: |
+          cd build
+          ambuild
+        env:
+          MMSOURCE112: ${{ github.workspace }}/metamod-source
+          HL2SDKCS2: ${{ github.workspace }}/hl2sdk
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sql_mm-linux
+          path: build/package
+
+  build-windows:
+    name: Windows (x86_64)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      # 同 Linux：将 hl2sdk-manifests 更新到远程最新，避免旧版引用已移除的 tier1 库。
+      - name: Update hl2sdk-manifests submodule
+        shell: bash
+        run: git submodule update --init --remote hl2sdk-manifests
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # 新版 Python 上 AMBuild 的 pip 安装需要 wheel。
+      - name: Install wheel
+        run: python -m pip install wheel
+
+      - name: Install AMBuild
+        run: |
+          git clone --depth 1 https://github.com/alliedmodders/ambuild.git
+          python -m pip install ./ambuild
+
+      - name: Clone Metamod:Source
+        run: git clone --depth 1 https://github.com/alliedmodders/metamod-source.git
+
+      - name: Clone HL2SDK (cs2)
+        run: git clone --depth 1 --branch cs2 https://github.com/alliedmodders/hl2sdk.git
+
+      - name: Configure AMBuild
+        run: |
+          mkdir build
+          cd build
+          python ../configure.py -s cs2 --enable-optimize
+        env:
+          MMSOURCE112: ${{ github.workspace }}\metamod-source
+          HL2SDKCS2: ${{ github.workspace }}\hl2sdk
+
+      - name: Build
+        run: |
+          cd build
+          ambuild
+        env:
+          MMSOURCE112: ${{ github.workspace }}\metamod-source
+          HL2SDKCS2: ${{ github.workspace }}\hl2sdk
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sql_mm-windows
+          path: build/package

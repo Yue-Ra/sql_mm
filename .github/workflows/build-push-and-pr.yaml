@@ -1,0 +1,21 @@
+name: Build pushes and pull requests
+
+# 非 master 分支的推送以及 Pull Request 时自动构建。
+on:
+  push:
+    branches-ignore:
+      - master
+    tags-ignore:
+      - "**"
+  pull_request:
+
+jobs:
+  build-push:
+    if: ${{ github.event_name == 'push' }}
+    name: Build Push
+    uses: ./.github/workflows/build.yaml
+
+  build-pr:
+    if: ${{ github.event_name == 'pull_request' }}
+    name: Build PR
+    uses: ./.github/workflows/build.yaml
